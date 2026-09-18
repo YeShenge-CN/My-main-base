@@ -7,6 +7,7 @@
 | 目录 | 说明 |
 | --- | --- |
 | [`School Trade/`](School%20Trade/) | 校园二手交易平台，Django + MySQL 的课程项目，含一键启动器 |
+| [`stock/`](stock/) | A股量化分析系统，Streamlit + 双均线策略 + 随机森林预测，含一键启动器 |
 
 ## 克隆
 

@@ -1,0 +1,15 @@
+# Streamlit 运行配置（由一键启动器自动使用）
+[server]
+headless = true
+address = "127.0.0.1"
+port = 8501
+# 允许浏览器在存在代理 / 端口转发时正常连接，避免出现一直 "Please wait..."
+enableCORS = false
+enableXsrfProtection = false
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "dark"
