@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-2">
+        <h5 class="fw-bold mb-3">商品分类</h5>
+        <div class="list-group">
+            <a href="{% url 'index' %}" class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">全部商品</a>
+            {% for category in categories %}
+            <a href="?category_id={{ category.id }}" class="list-group-item list-group-item-action {% if selected_category|add:"0" == category.id %}active{% endif %}">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm position-relative">
+                    {% if product.seller == user %}
+                    <span class="position-absolute top-0 end-0 badge bg-info text-white m-2" style="font-size: 10px;">我发布的</span>
+                    {% endif %}
+                    
+                    <img src="{{ product.image.url }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ product.title }}">
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                        <p class="card-text text-danger fw-bold mb-1">¥ {{ product.price }}</p>
+                        <p class="card-text text-muted small">发布者: {{ product.seller.username }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 pb-3">
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary w-100 fw-bold">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted mt-5">
+                <h5>当前分类下暂无商品~</h5>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

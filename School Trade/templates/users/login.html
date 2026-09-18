@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0 fs-5">🔑 学生账号登录</h4>
+            </div>
+            
+            <div class="card-body p-4">
+                {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">用户名</label>
+                        <input type="text" name="username" class="form-control" placeholder="请输入您的用户名" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">密码</label>
+                        <input type="password" name="password" class="form-control" placeholder="请输入密码" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">立即安全登录</button>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-light text-center py-3 border-top">
+                <span class="text-muted small">还没有校园交易账号？</span>
+                <a href="{% url 'register' %}" class="text-primary small fw-bold text-decoration-none ms-1">立即注册新同学账号 →</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+# ============================================================
+#  仓库忽略规则
+# ============================================================
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------- 虚拟环境（体积大，不提交）----------
+venv/
+.venv/
+env/
+ENV/
+
+# ---------- Django ----------
+*.log
+db.sqlite3
+*.sqlite3
+/staticfiles/
+
+# ---------- 本机敏感配置：数据库口令 / SECRET_KEY ----------
+local_settings.py
+
+# ---------- 编辑器 / 系统 ----------
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+
+# ---------- 备份 / 临时 ----------
+*.bak
+*.tmp
+_upload_github/

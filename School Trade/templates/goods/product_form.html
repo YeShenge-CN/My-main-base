@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-warning text-dark fw-bold py-3">
+                <h4 class="mb-0 fs-5">✨ 发布我的校园闲置</h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">请真实填写商品信息，良好的描述和清晰的实物图能帮你更快卖出哦！</p>
+                
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">商品标题</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{% for error in form.title.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">所属分类</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">{% for error in form.category.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">期望售价 (元)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">¥</span>
+                                {{ form.price }}
+                            </div>
+                            {% if form.price.errors %}
+                                <div class="text-danger small mt-1">{% for error in form.price.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">新旧程度</label>
+                        {{ form.condition }}
+                        {% if form.condition.errors %}
+                            <div class="text-danger small mt-1">{% for error in form.condition.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">宝贝详情描述</label>
+                        {{ form.description }}
+                        <div class="form-text text-muted">可以写明：转手原因、购买渠道、使用情况、可否小刀、宿舍自提还是校内面交。</div>
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">上传宝贝实物图</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">{% for error in form.image.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="{% url 'index' %}" class="btn btn-light me-md-2">取消</a>
+                        <button type="submit" class="btn btn-warning px-4 fw-bold">确认发布上架</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mt-4 mb-5">
+    <div class="col-md-6 mb-4">
+        <img src="{{ product.image.url }}" class="img-fluid rounded shadow-sm w-100" style="max-height: 450px; object-fit: cover;" alt="{{ product.title }}">
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <span class="badge bg-warning text-dark mb-2">{{ product.category.name }}</span>
+        <h2 class="fw-bold mb-3">{{ product.title }}</h2>
+        <h3 class="text-danger fw-bold my-3">¥ {{ product.price }}</h3>
+        
+        <div class="card mb-4 border-0 bg-light">
+            <div class="card-body py-3">
+                <p class="mb-2"><strong>卖家同学：</strong> {{ product.seller.username }}</p>
+                <p class="mb-2"><strong>宿舍楼栋：</strong> {{ product.seller.dorm_building|default:"未填写" }}</p>
+                <p class="mb-0"><strong>发布时间：</strong> {{ product.created_at|date:"Y-m-d H:i" }}</p>
+            </div>
+        </div>
+        
+        <h5 class="fw-bold text-secondary">宝贝描述</h5>
+        <p class="text-muted" style="white-space: pre-line;">{{ product.description }}</p>
+        
+        <div class="mt-4 pt-3 border-top">
+            {% if product.status == 0 %}
+                {% if product.seller == request.user %}
+                    <button class="btn btn-secondary btn-lg w-100 fw-bold" disabled>
+                        🏠 这是您发布的商品，无法拍下
+                    </button>
+                {% else %}
+                    <a href="{% url 'trades:create_order' product.id %}" 
+                       class="btn btn-danger btn-lg w-100 fw-bold shadow-sm" 
+                       onclick="return confirm('确认要拍下这件商品吗？');">
+                       🛒 立即拍下（线下交易）
+                    </a>
+                {% endif %}
+            {% else %}
+                <button class="btn btn-secondary btn-lg w-100 fw-bold" disabled>❌ 商品已被拍下/交易中</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<div class="row justify-content-center mb-5">
+    <div class="col-md-10">
+        <h4 class="fw-bold mb-4">💬 宝贝咨询与留言 ({{ product.comments.count }})</h4>
+        
+        {% if user.is_authenticated %}
+        <form action="{% url 'trades:add_comment' product.id %}" method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" name="content" class="form-control shadow-sm" placeholder="学长学姐好，请问这件商品可以小刀吗？哪里自提？" required>
+                <button type="submit" class="btn btn-primary fw-bold px-4">发送留言</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-light text-center py-3 mb-4 border shadow-sm">
+            <span class="text-muted">想要参与宝贝留言互动？请先</span> <a href="{% url 'login' %}" class="fw-bold text-decoration-none">登录账号</a>
+        </div>
+        {% endif %}
+
+        <div class="comment-list">
+            {% for comment in product.comments.all %}
+            <div class="d-flex border-bottom py-3">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-primary">👤 {{ comment.author.username }} 
+                            {% if comment.author == product.seller %}
+                            <span class="badge bg-danger ms-1" style="font-size: 10px;">卖家</span>
+                            {% endif %}
+                        </span>
+                        <span class="text-muted small">{{ comment.created_at|date:"m-d H:i" }}</span>
+                    </div>
+                    <p class="text-dark mb-0 ms-1 small">{{ comment.content }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted small">暂无留言，快来当第一个沙发吧！</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
