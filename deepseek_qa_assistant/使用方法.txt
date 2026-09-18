@@ -1,0 +1,2 @@
+在.env中填写你自己的DeepSeekAPIKey
+在本文件夹与dist文件夹中均需要自己填写

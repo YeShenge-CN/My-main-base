@@ -1,0 +1,28 @@
+# ---- 敏感配置：绝对不要提交 ----
+.env
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- PyInstaller 打包产物 ----
+build/
+dist/
+*.spec
+
+# ---- 开发辅助产物（截图 / 日志）----
+preview.png
+smoke_shot.png
+启动日志.log
+自检报告.log
+_temp_test/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
