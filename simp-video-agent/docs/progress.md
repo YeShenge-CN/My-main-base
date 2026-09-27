@@ -1083,6 +1083,13 @@ node packages/agent-tools/dist/cli.mjs --preset diagram --no-agent --at 2,6 --ou
   3. 面板地址改为**必填**（原先带一个「写完那一刻的服务端口」当默认值，只会误导人）。
 ★ 断言名称、顺序、条数全部与原产物一致 —— 所以文档里那几个 N/N 现在又是可信的了。
 ★ 前提：断言是按演示文档写的，新克隆要先跑 `make-panel-demo.mjs`（`out/` 不进版本库）。
+
+★★ **发布到作品集仓库的一个坑**（本轮踩到，症状极具欺骗性）：把本项目铺进
+`My-main-base/simp-video-agent/` 用的是 `git checkout-index -a --prefix=...`，
+而它**默认不覆盖已存在的文件**，只轻轻说一句 `already exists, no checkout`。
+于是：**新增文件都上去了，而改过的文件仍然是旧内容** —— 看起来发布成功了。
+必须写成 `git checkout-index -a -f --prefix=...`（`-f` 才覆盖），
+并且提交前用 `git diff --cached --stat` 核对「改动的文件确实在列表里」。
 ## 0.28 第二十九轮：token 账的实测分析 + 下一轮的三份作业单（**未改任何代码**）
 
 > ★★ 这一轮**只做了分析**，一行代码都没动。下面三项是**下一轮要做的事**，
