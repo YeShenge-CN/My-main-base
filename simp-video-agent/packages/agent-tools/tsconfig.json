@@ -1,0 +1,12 @@
+﻿{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  // ★ 这两个文件被排除在外：它们是宿主入口，需要 DOM 类型
+  //   （serve-panel 注入 Chrome 渲染；verify-backends 要 decode PNG 做像素对比）。
+  //   由 tsconfig.node.json 单独检查。src 的其余部分必须保持宿主无关。
+  "include": ["src"],
+  "exclude": ["src/serve-panel.ts", "src/verify-backends.ts", "src/diag-backends.ts", "src/diag-text-metrics.ts", "src/diag-text-offset.ts"]
+}

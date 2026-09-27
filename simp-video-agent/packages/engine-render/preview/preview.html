@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Simp Video Agent — preview</title>
+    <!-- 内联空 favicon：避免浏览器请求 /favicon.ico 拿到 404，污染控制台与探针。 -->
+    <link rel="icon" href="data:," />
+    <style>
+      /* ── 字体自托管 ─────────────────────────────────────────────
+         全部指向仓库内的本地文件，绝不依赖系统字体。
+         font-display: block 是刻意的：宁可短暂不可见，也不要让浏览器
+         先用替代字体画一遍 —— 那正是"同一帧两次渲染不一样"的来源。 */
+      @font-face {
+        font-family: 'SvaInter';
+        src: url('/packages/engine-render/assets/fonts/inter-latin-400.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: 'SvaInter';
+        src: url('/packages/engine-render/assets/fonts/inter-latin-700.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: 'SvaNotoCJK';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-sc-400.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      /* 粗体：自托管的中文 700 字重（缺了它只能靠浏览器合成，两条后端会不一样） */
+      @font-face {
+        font-family: 'SvaNotoCJK';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-sc-700.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      /* 希腊字母与数学符号（π / θ / ∑ / ∫）。缺了它字会画成豆腐块 —— 实测踩过。 */
+      @font-face {
+        font-family: 'SvaMath';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-math-400.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+
+      html, body {
+        margin: 0; padding: 0; background: #0b0e14; overflow: hidden;
+        font-family: 'SvaInter', 'SvaNotoCJK', 'SvaMath', sans-serif;
+      }
+
+      /* 预览的屏幕适配【只用容器级 CSS transform: scale()】，一行都不进渲染逻辑 */
+      #viewport {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      #stage { transform-origin: center center; }
+
+      /* ── mode=export 的封锁 ─────────────────────────────────────
+         导出帧必须与"静止的一张画"完全一致，所以一切随时间变化的
+         渲染效果、以及任何交互态视觉，都必须在这里被掐掉。 */
+      html[data-mode='export'] * {
+        transition: none !important;
+        animation: none !important;
+        caret-color: transparent !important;
+        outline: none !important;
+      }
+      html[data-mode='export'] #stage {
+        transform: scale(1) !important; /* 导出必须是 1:1，绝不带屏幕适配缩放 */
+      }
+      html[data-mode='export'] #viewport {
+        justify-content: flex-start;
+        align-items: flex-start;
+      }
+      html[data-mode='export'] ::selection { background: transparent; }
+      html[data-mode='export'] #probe { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="viewport"><div id="stage"></div></div>
+    <pre id="probe"></pre>
+    <script src="/out/preview-bundle.js"></script>
+  </body>
+</html>

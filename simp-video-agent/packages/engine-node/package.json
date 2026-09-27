@@ -1,0 +1,25 @@
+{
+  "name": "@sva/engine-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./headless": "./src/headless.ts",
+    "./internal": "./src/internal.ts",
+    "./screenshot": "./src/screenshot.ts",
+    "./export": "./src/export.ts",
+    "./encode": "./src/encode.ts",
+    "./chrome": "./src/chrome.ts"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "@sva/engine-core": "workspace:*",
+    "@sva/engine-render": "workspace:*",
+    "puppeteer-core": "^25.11.0",
+    "rolldown": "^1.2.9"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit"
+  }
+}

@@ -1,0 +1,18 @@
+﻿{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // ★ 这是一份"入口程序"的 tsconfig，不是"库"的。
+    //   serve-panel.ts 要注入 Chrome 渲染后端，而 engine-node 那条路径
+    //   （renderFramesWithChrome）的 page.evaluate 签名需要 DOM 类型。
+    //   把一个宿主入口的 DOM 需求扩散到整个 src，就等于把
+    //   "哪一层能碰 DOM"这条边界抹掉 —— 所以只给这个文件开。
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  // ★ 这里被排除在外的是 serve-panel.ts 吗？不 —— 恰好相反：
+  //   它就是【要检查这个文件】的那份配置。extend 会把 tsconfig.json 的
+  //   exclude 一起继承下来（include 不覆盖 exclude），所以必须显式清空，
+  //   否则会出现"include 和 exclude 是同一个文件"的 TS18003。
+  "include": ["src/serve-panel.ts", "src/verify-backends.ts", "src/diag-backends.ts", "src/diag-text-metrics.ts", "src/diag-text-offset.ts"],
+  "exclude": []
+}

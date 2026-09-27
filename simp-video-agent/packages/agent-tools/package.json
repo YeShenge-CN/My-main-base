@@ -1,0 +1,27 @@
+{
+  "name": "@sva/agent-tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@sva/engine-core": "workspace:*",
+    "@sva/engine-node": "workspace:*",
+    "@sva/engine-render": "workspace:*",
+    "mathjax-full": "^3.2.2"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "puppeteer-core": "^25.11.0",
+    "rolldown": "^1.2.9"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "build:cli": "node build-cli.mjs",
+    "shot": "node dist/cli.mjs",
+    "panel": "node dist/serve-panel.mjs",
+    "verify:panel": "node dist/verify-panel.mjs"
+  }
+}

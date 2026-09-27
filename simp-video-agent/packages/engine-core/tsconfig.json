@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* 显式声明：engine-core 的 src 里没有任何宿主类型可用。
+       没有 DOM lib 就没有 document / window / canvas 这些名字，
+       tsc 会在类型层面直接拒绝它们。 */
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src"]
+}

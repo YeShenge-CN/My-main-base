@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    /* 测试需要 node:fs 去扫描源码（见 test/purity.test.ts），
+       但 src 仍然必须能通过上面那份「无宿主类型」的 tsconfig。 */
+    "types": ["node"]
+  },
+  "include": ["src", "test"]
+}

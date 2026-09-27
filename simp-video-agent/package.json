@@ -1,0 +1,24 @@
+{
+  "name": "simp-video-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=20.10"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --workspace-concurrency=1 --if-present run typecheck",
+    "test": "vitest run --pool=threads --exclude \"**/node_modules/**\" --exclude \"**/.pnpm-store/**\" --exclude \"**/dist/**\" --exclude \"**/out/**\"",
+    "lint": "eslint .",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run lint"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.1"
+  }
+}

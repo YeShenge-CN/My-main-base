@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Simp Video Agent — 编辑器</title>
+    <!-- 内联空 favicon：不写这一行，浏览器会去请求 /favicon.ico 并拿到 404。
+         它不影响功能，但会污染"页面里不能有失败请求"这条断言的信号。 -->
+    <link rel="icon" href="data:," />
+    <style>
+      @font-face {
+        font-family: 'SvaInter';
+        src: url('/packages/engine-render/assets/fonts/inter-latin-400.woff2') format('woff2');
+        font-weight: 400; font-display: block;
+      }
+      /* ★ 面板这一页也必须有 700 字重：面板的预览画布用的是同一条字体栈，
+         缺了它就看不到粗体（浏览器会合成），于是【预览 ≠ 成片】。 */
+      @font-face {
+        font-family: 'SvaInter';
+        src: url('/packages/engine-render/assets/fonts/inter-latin-700.woff2') format('woff2');
+        font-weight: 700; font-display: block;
+      }
+      @font-face {
+        font-family: 'SvaNotoCJK';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-sc-400.woff2') format('woff2');
+        font-weight: 400; font-display: block;
+      }
+      @font-face {
+        font-family: 'SvaNotoCJK';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-sc-700.woff2') format('woff2');
+        font-weight: 700; font-display: block;
+      }
+      /* 希腊字母与数学符号（π / θ / ∑ / ∫）—— 缺了它字会画成豆腐块（实测踩过） */
+      @font-face {
+        font-family: 'SvaMath';
+        src: url('/packages/engine-render/assets/fonts/noto-sans-math-400.woff2') format('woff2');
+        font-weight: 400; font-display: block;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0; height: 100%; background: #0b0e14; color: #c9d4e6;
+        font-family: 'SvaInter', 'SvaNotoCJK', 'SvaMath', sans-serif; font-size: 12px;
+        overflow: hidden;
+      }
+      #app { display: flex; flex-direction: column; height: 100vh; }
+
+      #topbar {
+        display: flex; gap: 14px; align-items: center;
+        padding: 6px 12px; background: #10141d; border-bottom: 1px solid #1d2431;
+      }
+      #docstat { color: #6b7a94; }
+
+      /* 四栏：大纲 / 预览 / 效果控件 / Agent 聊天。
+         聊天放在最右而不是浮层：它是要长期看着的东西，浮层会挡住预览。 */
+      #body { display: grid; grid-template-columns: 190px 1fr 300px 320px; flex: 1; min-height: 0; }
+      aside { background: #0e121a; border-right: 1px solid #1d2431; overflow: auto; padding: 8px; }
+      #inspector { border-right: none; border-left: 1px solid #1d2431; }
+      #chatwrap { display: flex; flex-direction: column; border-left: 1px solid #1d2431; overflow: hidden; }
+
+      /* ── 大纲工具条 ─────────────────────────────────────────── */
+      .outline-tools { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+      .btn.mini { padding: 2px 7px; font-size: 10px; }
+      .select.mini { padding: 2px 4px; font-size: 10px; background: #131a28; color: #8fa6c8; border: 1px solid #26324a; border-radius: 3px; }
+
+      /* ── 聊天窗口 ───────────────────────────────────────────── */
+      .chat { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
+      .chat-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+      .msg { border-radius: 6px; padding: 5px 8px; font-size: 11px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+      .msg-user { background: #1b2740; color: #d7e6ff; align-self: flex-end; max-width: 92%; }
+      .msg-tool { background: #10141d; border: 1px solid #1d2431; color: #9fb0c9; }
+      .msg-note { background: transparent; border-left: 2px solid #2c3a52; color: #7f92ad; padding-left: 7px; }
+      .msg-error { background: #2a1616; border: 1px solid #5a302f; color: #f0bcb7; }
+      .msg-tool-head { display: block; color: #6b8bb5; font-size: 10px; margin-bottom: 2px; }
+      .msg-tool-text { color: #a8bacf; }
+      /* 推理等级：它是「这一轮模型怎么想」的总开关，放在聊天区最上面，一眼看得见。 */
+      /* 「打开工程」用的文件选择框：它是按钮的幕后，不该出现第二条可见的控件 */
+      .projfile { display: none; }
+
+      .chat-reason { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .chat-reason .reason-label { color: #7b8aa5; font-size: 10px; }
+      .reason-select { background: #0b0f17; color: #d8e2f2; border: 1px solid #26324a; border-radius: 4px; padding: 2px 6px; font: inherit; font-size: 11px; }
+      .reason-select:disabled { opacity: .5; }
+      .chat-reason .reason-hint { color: #55637a; font-size: 10px; }
+      .chat-reason .reason-sep { width: 1px; height: 14px; background: #26324a; }
+      .chat-reason .film-label { color: #9fc0ea; font-size: 10px; cursor: pointer; }
+      .chat-reason .film-box { margin: 0; cursor: pointer; }
+      .chat-reason .film-box:checked + .film-label { color: #63d2ff; }
+
+      /* API 设置（作业 3）：默认折起来，展开时才占地方 */
+      .api-settings { margin: 0 0 6px; }
+      .api-settings > summary { cursor: pointer; color: #7b8aa5; font-size: 10px; }
+      .api-grid { display: grid; grid-template-columns: 56px 1fr; gap: 3px 8px; margin: 6px 0; }
+      .api-label { color: #55637a; font-size: 10px; align-self: center; }
+      .api-input { background: #0b0f17; color: #d8e2f2; border: 1px solid #26324a; border-radius: 4px; padding: 2px 6px; font: inherit; font-size: 11px; min-width: 0; }
+      .api-actions { display: flex; gap: 6px; margin-bottom: 4px; }
+      .api-btn { background: #16223a; color: #9fc0ea; border: 1px solid #26324a; border-radius: 4px; padding: 2px 8px; font: inherit; font-size: 10px; cursor: pointer; }
+      .api-btn:hover { border-color: #3d5580; }
+      .api-btn.danger { color: #e08a8a; }
+      .api-status { display: block; color: #55637a; font-size: 10px; line-height: 1.5; word-break: break-all; }
+      .api-status.bad { color: #e08a8a; }
+      .api-hint { display: block; color: #3f4b60; font-size: 10px; }
+
+      .chat-presets { display: flex; gap: 4px; flex-wrap: wrap; }
+      .chip { border-radius: 10px; padding: 2px 8px; font-size: 10px; cursor: pointer; border: 1px solid #26324a; background: #131a28; color: #8fa6c8; }
+      .chip:hover { background: #1a2438; color: #c7d8f0; }
+      .chat-compose { display: flex; gap: 6px; align-items: flex-end; }
+      .chat-input { flex: 1; resize: none; background: #0b0f17; color: #d8e2f2; border: 1px solid #26324a; border-radius: 5px; padding: 5px 7px; font: inherit; font-size: 11px; }
+      .chat-input:focus { outline: 1px solid #3b5a86; }
+      .chat-input:disabled { opacity: .6; }
+      .btn.chat-send { padding: 5px 12px; background: #14304d; border-color: #2c5177; color: #cfe4ff; }
+      .btn.chat-send:disabled { opacity: .5; cursor: progress; }
+      .chat-status { font-size: 10px; color: #ffb454; min-height: 13px; }
+      .chat-status.on::after { content: '▍'; animation: blink 1s steps(2) infinite; }
+      @keyframes blink { 0%,50% { opacity: 1 } 50.01%,100% { opacity: 0 } }
+
+      h3 { margin: 4px 0 8px; font-size: 11px; color: #7b8aa5; font-weight: 600; letter-spacing: .06em; }
+      h4.grp { margin: 10px 0 4px; font-size: 10px; color: #5b6a83; text-transform: uppercase; }
+
+      .layer { color: #8ea2c4; margin: 6px 0 2px; }
+      .obj { display: flex; justify-content: space-between; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+      .obj:hover { background: #161c28; }
+      .obj.sel { background: #1b2740; color: #cfe4ff; }
+      .otype { color: #55637a; font-size: 10px; }
+
+      /* ── 预览容器 ───────────────────────────────────────────────
+         #preview 的 CSS 宽高由 JS 设为【导出像素宽高】，与 canvas.width/height 一致。
+         屏幕适配只用 transform: scale()，绝不改画布尺寸、绝不用 devicePixelRatio。
+         ★ 播放控制（#transport）刻意放在 #preview 【外面】：
+           它属于界面，不属于画面 —— 放进被 scale() 的容器里会跟着一起缩小，
+           而且会污染"容器像素 = 导出像素"这条契约。 */
+      #previewwrap {
+        position: relative; display: flex; flex-direction: column; gap: 8px;
+        align-items: center; justify-content: center;
+        overflow: hidden; background:
+          linear-gradient(45deg, #0a0d13 25%, transparent 25%) -8px 0/16px 16px,
+          linear-gradient(-45deg, #0a0d13 25%, transparent 25%) -8px 0/16px 16px,
+          linear-gradient(45deg, transparent 75%, #0a0d13 75%) -8px 0/16px 16px,
+          linear-gradient(-45deg, transparent 75%, #0a0d13 75%) -8px 0/16px 16px,
+          #0d1017;
+      }
+      #preview { transform-origin: center center; }
+      #stage { display: block; outline: 1px solid #223047; }
+      #transport { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9fb0c9; }
+      #transport .framelabel { font-variant-numeric: tabular-nums; color: #7f92ad; }
+      #transport .sep { color: #3a4658; }
+
+      .row { display: grid; grid-template-columns: 14px 80px 1fr 18px; gap: 6px; align-items: center; margin: 3px 0; }
+      .row.readonly .lbl { color: #55637a; }
+      .lbl { color: #9fb0c9; }
+      .badges { display: flex; gap: 2px; }
+      .dot { width: 7px; height: 7px; border-radius: 50%; background: #dfe7f3; display: inline-block; }
+      .dot-anim { background: #4ea1ff; box-shadow: 0 0 6px #4ea1ff; }
+      /* 动画开关：◇ 未加 / ◆ 已有 */
+      .animb { width: 16px; padding: 0; background: transparent; border: none; color: #55637a; cursor: pointer; font-size: 11px; line-height: 1; }
+      .animb:hover { color: #8fb6e8; }
+      .animb.on { color: #4ea1ff; text-shadow: 0 0 6px #4ea1ff; }
+      .lock { font-size: 10px; line-height: 1; }
+      .lock-hard { color: #ff8b6b; }
+      .lock-soft { color: #7fb2ff; }
+      .ctl { display: flex; gap: 6px; align-items: center; }
+      .range { width: 100%; }
+      .num { width: 62px; background: #131923; border: 1px solid #232c3c; color: #cfe0f7; border-radius: 3px; padding: 2px 4px; }
+      .color { width: 34px; height: 20px; background: none; border: 1px solid #232c3c; }
+      .hex { color: #6b7a94; font-size: 10px; }
+      .select, .text, .expr, .textarea { width: 100%; background: #131923; border: 1px solid #232c3c; color: #cfe0f7; border-radius: 3px; padding: 2px 4px; }
+      .ctl-expr { display: block; }
+      .verdict { font-size: 10px; margin-left: 4px; }
+      .verdict.ok { color: #63d68b; }
+      .verdict.bad { color: #ff6b6b; }
+      .unit, .sep { color: #55637a; }
+      .legend { display: flex; gap: 10px; color: #6b7a94; font-size: 10px; margin-bottom: 6px; }
+      .muted { color: #55637a; }
+
+      #bottom { display: grid; grid-template-columns: 1.8fr 0.9fr 1fr 1.1fr; height: 236px; border-top: 1px solid #1d2431; }
+      .camrow { display: flex; gap: 6px; margin-bottom: 6px; }
+      section { padding: 8px; overflow: auto; border-right: 1px solid #1d2431; background: #0c1017; }
+      section:last-child { border-right: none; }
+
+      /* 镜头管理（P4 #14）：＋镜头 / 名字 / 改名 / 删除 */
+      .scenetools { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+      .scenetools .text { width: 130px; }
+      .scenetools .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+      #scenetools .framelabel { color: #7f92ad; font-size: 11px; }
+
+      /* 关键帧条（§7 第 4 条）：每条轨道一行，每个关键帧一个手柄。
+         标签列宽与 .tl-labels 一致（74px），手柄的横坐标才与时间轴画布严格对齐。 */
+      .kf-strip { margin-top: 6px; border-top: 1px solid #1d2431; padding-top: 4px; }
+      .kf-head { color: #7f92ad; font-size: 10px; margin-bottom: 4px; }
+      .kf-row { display: grid; grid-template-columns: 74px 1fr; align-items: center; height: 18px; }
+      .kf-label { color: #7b8aa5; font-size: 10px; }
+      .kf-track { position: relative; height: 16px; background: #0f1420; border: 1px solid #1d2431; border-radius: 2px; cursor: crosshair; }
+      .kf-track.kf-expr { color: #55637a; font-size: 10px; line-height: 16px; padding-left: 4px; cursor: default; overflow: hidden; white-space: nowrap; }
+      .kf-key { position: absolute; top: -3px; transform: translateX(-50%); background: none; border: none; color: #63d2ff; cursor: ew-resize; font-size: 12px; line-height: 1; padding: 0; }
+      .kf-key:hover { color: #a8e6ff; text-shadow: 0 0 6px #63d2ff; }
+
+      .tl-scroll { display: flex; gap: 0; }
+      .tl-labels { width: 74px; flex: none; }
+      .tl-label { color: #7b8aa5; font-size: 10px; line-height: 22px; }
+      .tl-canvas { flex: 1; height: 100%; min-height: 44px; cursor: crosshair; }
+
+      /* ── 镜头泳道 ───────────────────────────────────────────────
+         它比任何一条对象轨道都更基础：镜头边界决定"这一帧该看什么"，
+         所以放在轨道【上面】，而不是混在轨道之间。
+         宽度用百分比（父容器宽度 == canvas.clientWidth，两边同一把尺子）。 */
+      .tl-shots { position: relative; height: 20px; margin-left: 74px; margin-bottom: 4px; }
+      .tl-shot {
+        position: absolute; top: 0; height: 20px; overflow: hidden;
+        padding: 0 6px; font: inherit; font-size: 10px; line-height: 20px;
+        text-align: left; white-space: nowrap; text-overflow: ellipsis;
+        background: #16223a; color: #9fc0ea; border: 1px solid #26374f;
+        border-right-width: 2px; border-right-color: #3d5b84;
+        border-radius: 3px; cursor: pointer;
+      }
+      .tl-shot:hover { background: #1d2c49; color: #cfe4ff; }
+      .tl-shot.cur { background: #1f3b63; border-color: #4e8ad6; color: #e2f0ff; }
+
+      /* 接缝手柄（像 PR 那样拉伸镜头时长）：贴在镜头块两端，命中区 9px。 */
+      .tl-trim {
+        position: absolute; top: -2px; width: 9px; height: 24px;
+        cursor: ew-resize; z-index: 3; touch-action: none;
+      }
+      .tl-trim::after {
+        content: ''; position: absolute; left: 3px; top: 3px; width: 3px; height: 18px;
+        background: #3d5b84; border-radius: 2px;
+      }
+      .tl-trim.l, .tl-trim.r { }
+      .tl-trim:hover::after, .tl-trim.on::after { background: #63d2ff; box-shadow: 0 0 6px #63d2ff; }
+      body.trimming { cursor: ew-resize; user-select: none; }
+
+      .jcard { border: 1px solid #1d2431; border-radius: 5px; padding: 6px; margin-bottom: 6px; background: #10141d; }
+      .jhead { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+      .jactor { padding: 1px 6px; border-radius: 8px; font-size: 10px; }
+      .jactor-agent { background: #14304d; color: #8fc4ff; }
+      .jactor-user { background: #2b2416; color: #ffcd7a; }
+      .jactor-engine-autofix { background: #1d2c1d; color: #93e0a4; }
+      .jturn, .jver, .jstate { color: #6b7a94; font-size: 10px; }
+      .jstate.pending { color: #ffb454; }
+      .jstate.ok { color: #63d68b; }
+      .jops { margin: 4px 0 6px; padding-left: 16px; }
+      .jops li { margin: 2px 0; color: #8ea2c4; }
+      .intent { color: #b9a06a; font-style: italic; margin-left: 6px; }
+      .path { color: #55637a; margin-left: 6px; font-size: 10px; }
+      .revert { background: #1b2436; border: 1px solid #2c3a52; color: #cfe0f7; border-radius: 3px; padding: 3px 10px; cursor: pointer; }
+      .revert:disabled { opacity: .4; cursor: not-allowed; }
+
+      /* 顶栏徽标：未决提案计数 */
+      .badge { margin-left: auto; min-width: 18px; text-align: center; border-radius: 9px; padding: 1px 6px; font-size: 10px; color: #0b0e14; background: transparent; }
+      .badge.on { background: #ffb454; }
+
+      /* 效果控件：该字段上有未决提案 → 琥珀高亮 + diff */
+      .row-proposed { background: rgba(255, 180, 84, .10); outline: 1px solid rgba(255, 180, 84, .45); border-radius: 4px; }
+      .diff { grid-column: 1 / -1; display: flex; gap: 6px; align-items: center; font-size: 10px; color: #ffcf8f; padding-left: 20px; }
+      .diff-arrow { color: #ffb454; }
+      .diff-to { color: #ffe1b0; font-weight: 600; }
+
+      /* 审批卡 */
+      .pcard { border: 1px solid #4a3a1d; background: #17130c; border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+      .phead { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+      .pby { background: #4a3a1d; color: #ffd79a; border-radius: 8px; padding: 1px 6px; font-size: 10px; }
+      .ppath { color: #a8926a; font-size: 10px; }
+      .pttl { margin-left: auto; color: #7b6a4a; font-size: 10px; }
+      .preason { display: grid; grid-template-columns: 56px 1fr; gap: 2px 8px; margin: 0 0 8px; }
+      .preason dt { color: #7b6a4a; font-size: 10px; }
+      .preason dd { margin: 0; color: #cbb894; font-size: 11px; }
+      .preason dd.target { color: #ffd79a; font-weight: 600; }
+      .preason dd.rationale { color: #d9c39a; font-style: italic; }
+      .pactions { display: flex; gap: 6px; align-items: center; }
+      .btn { border-radius: 3px; padding: 3px 10px; cursor: pointer; border: 1px solid #3a3020; background: #241d12; color: #e6d6b4; }
+      .btn.ok { background: #1d3324; border-color: #2f5a3c; color: #b7f0c9; }
+      .btn.no { background: #33201d; border-color: #5a302f; color: #f0bcb7; }
+      .btn.manual { background: #1b2740; border-color: #2c3a52; color: #cfe0f7; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="/out/panel-bundle.js"></script>
+  </body>
+</html>

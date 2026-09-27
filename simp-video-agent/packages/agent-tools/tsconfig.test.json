@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // 测试夹具要驱动 headless 渲染器（engine-node），而它的 page.evaluate
+    // 回调签名需要 DOM 类型。只有【测试程序】放开 DOM，src 仍然没有。
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  // ★ cli.ts / serve-panel.ts / verify-panel.ts 也在这里检查：
+  //   它们是"人真的会执行的那几个文件"，而 tsconfig.json 只 include src
+  //   （src 里没有 DOM），放在外面等于没人 typecheck 它们 ——
+  //   一个跑不起来的入口要等真的敲下去才发现。
+  "include": ["src", "test", "cli.ts"]
+}
