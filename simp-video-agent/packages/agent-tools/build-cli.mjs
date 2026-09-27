@@ -27,7 +27,23 @@ const distDir = join(here, 'dist');
 mkdirSync(distDir, { recursive: true });
 
 /** 会被 node 直接执行的入口（相对本包根）。加新入口只改这一行。 */
-const ENTRIES = ['cli.ts', 'src/serve-panel.ts', 'src/verify-backends.ts', 'src/diag-backends.ts', 'src/diag-text-metrics.ts', 'src/diag-text-offset.ts', 'src/diag-visibility.ts', 'test/verify-panel.ts'];
+const ENTRIES = [
+  'cli.ts',
+  'src/serve-panel.ts',
+  'src/verify-backends.ts',
+  'src/diag-backends.ts',
+  'src/diag-text-metrics.ts',
+  'src/diag-text-offset.ts',
+  'src/diag-visibility.ts',
+  // 五条实机校验：都靠真 Chrome 驱动面板（需要 danger-full-access）。
+  // ★ 它们【必须】在这里，否则 dist/ 里只会剩下上一次构建的陈旧产物 ——
+  //   而陈旧产物跑起来一切正常，只是验的是旧代码（这个坑本项目踩过）。
+  'test/verify-panel.ts',
+  'test/verify-timeline.ts',
+  'test/verify-film-ui.ts',
+  'test/verify-project-ui.ts',
+  'test/verify-reasoning-ui.ts',
+];
 
 const external = [
   // Node 内置：显式标出来，否则 rolldown 会为每个 node:* 报一条 UNRESOLVED_IMPORT

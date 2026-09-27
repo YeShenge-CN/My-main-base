@@ -94,9 +94,21 @@ SVA_STRESS=1     pnpm test   # 20 镜压力测试
 **实机校验**（会拉起真 Chrome、真鼠标事件，需要先有跑着的面板）：
 
 ```bash
-node packages/agent-tools/dist/verify-panel.mjs <面板地址>    # 面板交互回归，51 项
-node packages/agent-tools/dist/verify-backends.mjs --at 0.2,0.6,0.9   # 两条导出后端逐像素对比
+# 先备好夹具与面板
+node packages/agent-tools/make-panel-demo.mjs      # 生成 out/panel-demo.json（4 对象 / 2 镜 / 片长 8）
+node packages/agent-tools/dist/serve-panel.mjs --no-open
+
+node packages/agent-tools/dist/verify-panel.mjs        <面板地址>   # 面板交互回归，51 项
+node packages/agent-tools/dist/verify-timeline.mjs     <面板地址>   # 时间轴三道手势，24 项
+node packages/agent-tools/dist/verify-reasoning-ui.mjs <面板地址>   # 推理档位，12 项
+node packages/agent-tools/dist/verify-film-ui.mjs      <面板地址>   # 整片模式，15 项
+node packages/agent-tools/dist/verify-project-ui.mjs   <面板地址>   # 工程保存 / 打开 / 恢复，25 项
+node packages/agent-tools/dist/verify-backends.mjs --at 0.2,0.6,0.9  # 两条导出后端逐像素对比
 ```
+
+这五条面板脚本共用 `test/probe-harness.ts`（起 Chrome + 记断言 + 统一打印）。
+★ 断言是按演示文档写的：`out/` 不进版本库，所以新克隆下来必须先跑 `make-panel-demo.mjs`；
+否则服务端只会自动造一份「最小」文档（1 镜 / 12 秒），镜头相关的断言会直接失败。
 
 ## 已知环境约束
 

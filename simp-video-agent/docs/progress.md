@@ -1060,6 +1060,29 @@ node packages/agent-tools/dist/cli.mjs --preset diagram --no-agent --at 2,6 --ou
 
 ---
 
+
+### 十、补记：四条实机脚本的源码补齐（本轮的后续追加）
+
+§0.29 七 说的「五个实机脚本」，其中 **`verify-timeline` / `verify-film-ui` /
+`verify-project-ui` / `verify-reasoning-ui` 一度只剩 dist 里的编译产物、源码已丢失** ——
+它们不在 `build-cli.mjs` 的 ENTRIES 里，所以重建也不会覆盖它们；
+而**旧产物跑起来一切正常，只是验的是旧代码**（正是坑表里那条的变体）。
+现已按产物逐条还原成 TypeScript，并加进构建入口（12 个入口）：
+
+| 脚本 | 断言数 | 实机结果（真 Chrome） |
+|---|---|---|
+| `verify-timeline` | 24 | **24/24** |
+| `verify-film-ui` | 15 | **15/15** |
+| `verify-project-ui` | 25 | **25/25** |
+| `verify-reasoning-ui` | 12 | **12/12** |
+
+★ 三处【刻意】的改进（不是原样照抄）：
+  1. 抽了公共外壳 `test/probe-harness.ts` —— 原先四条各抄一份样板（约 30 行 × 4），
+     其中一条还**漏了 catch**，探针一炸就一行结论都看不到；
+  2. Chrome 路径改问 `engine-node` 的 `findChrome()`（原先把盘符写死在源码里）；
+  3. 面板地址改为**必填**（原先带一个「写完那一刻的服务端口」当默认值，只会误导人）。
+★ 断言名称、顺序、条数全部与原产物一致 —— 所以文档里那几个 N/N 现在又是可信的了。
+★ 前提：断言是按演示文档写的，新克隆要先跑 `make-panel-demo.mjs`（`out/` 不进版本库）。
 ## 0.28 第二十九轮：token 账的实测分析 + 下一轮的三份作业单（**未改任何代码**）
 
 > ★★ 这一轮**只做了分析**，一行代码都没动。下面三项是**下一轮要做的事**，
